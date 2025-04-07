@@ -123,8 +123,3 @@ public class ISMCTSPlayer extends AbstractPlayer implements IAnyTimePlayer {
         return params.budget;
     }
 
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-}
