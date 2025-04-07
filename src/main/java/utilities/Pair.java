@@ -29,7 +29,6 @@ public class Pair<T,V> {
         return Objects.equals(a, pair.a) &&
                 Objects.equals(b, pair.b);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(a, b);

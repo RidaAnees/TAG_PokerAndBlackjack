@@ -175,4 +175,5 @@ public class PokerDeckView extends ComponentView {
     public void flip() {
         front = !front;
     }
+
 }

@@ -23,6 +23,7 @@ public class FrenchCard extends Card {
         public int getNumber() {
             return number;
         }
+
     }
 
     public enum Suite {

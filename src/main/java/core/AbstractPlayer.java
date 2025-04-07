@@ -3,6 +3,7 @@ package core;
 import core.actions.AbstractAction;
 import core.interfaces.IPlayerDecorator;
 import evaluation.metrics.Event;
+import games.poker.PokerGameState;
 import players.PlayerParameters;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public abstract class AbstractPlayer {
      * Then we choose one (delegating to the _getAction() implemented by the AbstractPlayer subclass)
      * Then we apply any decorators to the chosen action.
      */
-    public final AbstractAction getAction(AbstractGameState gameState, List<AbstractAction> observedActions) {
+    public AbstractAction getAction(AbstractGameState gameState, List<AbstractAction> observedActions) {
         for (IPlayerDecorator decorator : decorators) {
             observedActions = decorator.actionFilter(gameState, observedActions);
         }
@@ -159,6 +160,8 @@ public abstract class AbstractPlayer {
 
     public void onEvent(Event event) {
     }
+
+    //public abstract AbstractAction getAction(PokerGameState gameState, List<AbstractAction> possibleActions);
 
     public abstract AbstractPlayer copy();
 

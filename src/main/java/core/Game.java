@@ -12,10 +12,18 @@ import games.GameType;
 import gui.AbstractGUIManager;
 import gui.GUI;
 import gui.GamePanel;
+
+import players.ISMCTS.ISMCTSParams;
+import players.ISMCTS.ISMCTSPlayer;
+import players.basicMCTS.BasicMCTSParams;
 import players.basicMCTS.BasicMCTSPlayer;
 import players.human.ActionController;
 import players.human.HumanConsolePlayer;
 import players.human.HumanGUIPlayer;
+import players.mcts.MASTPlayer;
+import players.mcts.MASTPlayerParams;
+import players.mcts.MCTSParams;
+import players.mcts.MCTSPlayer;
 import players.simple.RandomPlayer;
 import utilities.Pair;
 import utilities.Utils;
@@ -38,7 +46,7 @@ public class Game {
     // List of agents/players that play this game.
     protected List<AbstractPlayer> players;
     // Real game state and forward model
-    protected AbstractGameState gameState;
+    protected static AbstractGameState gameState;
     protected AbstractForwardModel forwardModel;
     private List<IGameListener> listeners = new ArrayList<>();
 
@@ -56,8 +64,8 @@ public class Game {
     private boolean pause, stop;
     private boolean debug = false;
     // Video recording
-    private Rectangle areaBounds;
-    private boolean recordingVideo = false;
+    Rectangle areaBounds;
+    boolean recordingVideo = false;
     String fileName = "output.mp4";
     String formatName = "mp4";
     String codecName = null;
@@ -328,7 +336,7 @@ public class Game {
      *
      * @param gui - gui to update.
      */
-    private void updateGUI(AbstractGUIManager gui, JFrame frame) {
+    void updateGUI(AbstractGUIManager gui, JFrame frame) {
         // synchronise on game to avoid updating GUI in middle of action being taken
         AbstractGameState gameState = getGameState();
         int currentPlayer = gameState.getCurrentPlayer();
@@ -821,41 +829,69 @@ public class Game {
      * and then run this class.
      */
     public static void main(String[] args) {
-        String gameType = Utils.getArg(args, "game", "Saboteur");
+        String gameType = Utils.getArg(args, "game", "Poker");
         boolean useGUI = Utils.getArg(args, "gui", true);
-        int turnPause = Utils.getArg(args, "turnPause", 0);
+        int turnPause = Utils.getArg(args, "turnPause", 100);
         long seed = Utils.getArg(args, "seed", System.currentTimeMillis());
-        ActionController ac = new ActionController();
 
         /* Set up players for the game */
         ArrayList<AbstractPlayer> players = new ArrayList<>();
+
+        ActionController ac = new ActionController();
+        AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
+        players.add(humanPlayer);
+
+        BasicMCTSParams params2 = new BasicMCTSParams();
+        players.add(new BasicMCTSPlayer(params2));
+
+//        MCTSParams params = new MCTSParams();
+//        AbstractPlayer mctsPlayer = new MCTSPlayer(params);
+//        players.add(mctsPlayer);
+
+//        /**
+//         * This is the ISMCTS implementation
+//         * 2 options; with and without game stats
+//         */
+//
+        //without game stats: (keep for both)
+        ISMCTSParams ismctsParams = new ISMCTSParams();
+        AbstractPlayer ismctsPlayer = new ISMCTSPlayer(ismctsParams);
+        players.add(ismctsPlayer );
+//
+//
+//        //with game stats: (comment out for without stats functionality)
+//        ISMCTSwithStats isw = new ISMCTSwithStats(players);
+
+
 //        players.add(new RandomPlayer());
-//        players.add(new RandomPlayer());
-//        players.add(new BasicMCTSPlayer());
+//
+//        MASTPlayerParams playerParams = new MASTPlayerParams();
+//        MASTPlayer playerFromParams = (MASTPlayer) playerParams.instantiate();
+//        players.add(playerFromParams);
+
 
 //        RMHCParams params = new RMHCParams();
 //        params.horizon = 15;
 //        params.discountFactor = 0.99;
-//        params.heuristic = AbstractGameState::getHeuristicScore;
+        //params.heuristic = AbstractGameState::getHeuristicScore;
 //        AbstractPlayer rmhcPlayer = new RMHCPlayer(params);
 //        players.add(rmhcPlayer);
 
-//        MCTSParams params = new MCTSParams();
-//        players.add(new MCTSPlayer(params));
-
+//
 //        players.add(new OSLAPlayer());
 //        players.add(new RMHCPlayer());
-        players.add(new HumanGUIPlayer(ac));
-        players.add(new HumanGUIPlayer(ac));
-        players.add(new HumanGUIPlayer(ac));
-//        players.add(new HumanConsolePlayer());
-//        players.add(new FirstActionPlayer());
+//          players.add(new HumanGUIPlayer(ac));
+//          players.add(new HumanGUIPlayer(ac));
+//          players.add(new HumanConsolePlayer());
+//          players.add(new HumanConsolePlayer());
 
-        /* Game parameter configuration. Set to null to ignore and use default parameters */
-        String gameParams = null;
-
-        /* Run! */
-        runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
+//          players.add(new FirstActionPlayer());
+//
+//        /* Game parameter configuration. Set to null to ignore and use default parameters */
+          String gameParams = null;
+//
+//        /* Run! */
+          runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
 
         /* Run multiple games */
 //        ArrayList<GameType> games = new ArrayList<>();

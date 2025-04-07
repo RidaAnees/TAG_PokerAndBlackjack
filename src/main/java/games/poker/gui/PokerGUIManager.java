@@ -18,6 +18,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class PokerGUIManager extends AbstractGUIManager {
     // Settings for display areas
@@ -66,18 +67,32 @@ public class PokerGUIManager extends AbstractGUIManager {
             coreParameters = game.getCoreParameters();
             if (gameState != null) {
                 JTabbedPane pane = new JTabbedPane();
+
                 JPanel main = new JPanel();
                 main.setOpaque(false);
                 main.setLayout(new BorderLayout());
+
                 JPanel rules = new JPanel();
+
+                JPanel scores = new JPanel();
+                JPanel calculations = new JPanel();
+
+
                 pane.add("Main", main);
                 pane.add("Rules", rules);
+                pane.add("Scores", scores);
+                pane.add("Calculations", calculations);
+
+
                 JLabel ruleText = new JLabel(getRuleText());
                 rules.add(ruleText);
                 rules.setBackground(new Color(43, 108, 25, 111));
+                scores.setBackground(new Color(23, 108, 25, 111));
+                calculations.setBackground(new Color(23, 108, 25, 111));
 
                 potMoney = new JLabel();
                 currentBets = new JLabel();
+
 
                 // Initialise active player
                 activePlayer = gameState.getCurrentPlayer();
@@ -155,9 +170,6 @@ public class PokerGUIManager extends AbstractGUIManager {
                 centerArea.setLayout(new BoxLayout(centerArea, BoxLayout.Y_AXIS));
                 communityPile = new PokerDeckView(pgs.getCommunityCards(), true, pgp.getDataPath());
                 communityPile.setFront(true);
-
-                //centerArea.add(drawPile);
-                //centerArea.add(discardPile);
                 centerArea.add(communityPile);
                 JPanel jp = new JPanel();
                 jp.setOpaque(false);
@@ -172,11 +184,14 @@ public class PokerGUIManager extends AbstractGUIManager {
 
                 // Add all views to frame
                 main.add(mainGameArea, BorderLayout.CENTER);
-                main.add(infoPanel, BorderLayout.NORTH);
+                scores.add(infoPanel, BorderLayout.CENTER);
                 main.add(actionPanel, BorderLayout.SOUTH);
+                // TODO: calculations.add(calcsPanel, BorderLayout.CENTER);
 
                 pane.add("Main", main);
                 pane.add("Rules", rules);
+                pane.add("Scores", scores);
+                pane.add("Calculations", calculations);
 
                 parent.setLayout(new BorderLayout());
                 parent.add(pane, BorderLayout.CENTER);
@@ -271,6 +286,15 @@ public class PokerGUIManager extends AbstractGUIManager {
         return pane;
     }
 
+    // Method to toggle card visibility
+    private void toggleCardsVisibility() {
+        for (PokerPlayerView playerHand : playerHands) {
+            playerHand.setFront(true);  // Toggle each player's hand visibility
+
+        }
+    }
+
+
     @Override
     protected void _update(AbstractPlayer player, AbstractGameState gameState) {
         if (gameState != null) {
@@ -302,13 +326,14 @@ public class PokerGUIManager extends AbstractGUIManager {
                     if (winners != null) {
                         winnerString += "pot" + p + " {";
                         for (int win: winners) {
-                            winnerString += win + "-" + (pot.getValue() / winners.size()) + ",";
+                            winnerString += "Player "+ win + " won amount: " + (pot.getValue() / winners.size()) + ",";
                         }
                         winnerString += "}";
                     }
                 }
+                toggleCardsVisibility();
                 winnerString = winnerString.replace(",}", "}");
-                JOptionPane.showMessageDialog(parent, "Round over! Winners: " + winnerString + ". Next round begins!");
+                JOptionPane.showMessageDialog(parent, "Round over! Winners: \n" + winnerString + ". \nNext round begins!");
             }
 
             // Update player
@@ -352,9 +377,40 @@ public class PokerGUIManager extends AbstractGUIManager {
 
     private String getRuleText() {
         String rules = "<html><center><h1>Poker</h1></center><br/><hr><br/>";
-        rules += "<p>Coming soon ...</p>";
+        rules += """
+                <p>Objective: Win chips by having the best hand at showdown or forcing opponents to fold.<br><br>
 
+                <strong>Blinds:</strong> Two players post forced bets—Small Blind (SB) and Big Blind (BB)—before cards are dealt.<br><br>
 
+                <strong>Hole Cards:</strong> Each player receives two private cards.<br><br>
+
+                <strong>Community Cards:</strong> Five cards are placed face-up on the table in three phases:<br>
+                        - <strong>Flop</strong> (3 cards) <strong>Turn</strong> (1 card) <strong>River</strong> (1 card)<br><br>
+
+                <strong>Betting Rounds:</strong><br>
+                        - <strong>Pre-Flop</strong> (after hole cards are dealt)<br>
+                        - <strong>Post-Flop</strong> (after 3 community cards)<br>
+                        - <strong>Post-Turn</strong> (after 4th community card)<br>
+                        - <strong>Post-River</strong> (after 5th community card)<br><br>
+
+                <strong>Winning:</strong> The best 5-card combination (using any hole and community cards) wins. Players can also win by making all others fold.</p>
+                
+               
+                <p><strong>Poker Hand Rankings (Highest to Lowest):</strong><br>
+                <strong>1. Royal Flush:</strong> A, K, Q, J, 10 of the same suit (e.g., A♠ K♠ Q♠ J♠ 10♠).<br>
+                <strong>2. Straight Flush:</strong> Five consecutive cards of the same suit (e.g., 9♦ 8♦ 7♦ 6♦ 5♦).<br>
+                <strong>3. Four of a Kind:</strong> Four cards of the same rank (e.g., 8♣ 8♦ 8♠ 8♥ K♠).<br>
+                <strong>4. Full House:</strong> Three of a kind + a pair (e.g., Q♥ Q♦ Q♠ 7♣ 7♠).<br>
+                <strong>5. Flush:</strong> Five cards of the same suit, not in sequence (e.g., A♦ J♦ 9♦ 6♦ 3♦).<br>
+                <strong>6. Straight:</strong> Five consecutive cards of mixed suits (e.g., 10♣ 9♦ 8♠ 7♥ 6♠).<br>
+                <strong>7. Three of a Kind:</strong> Three cards of the same rank (e.g., 5♣ 5♠ 5♦ Q♥ 8♠).<br>
+                <strong>8. Two Pair:</strong> Two different pairs (e.g., K♠ K♦ 4♣ 4♠ 10♦).<br>
+                <strong>9. One Pair:</strong> Two cards of the same rank (e.g., J♣ J♦ 7♠ 4♣ 2♥).<br>
+                <strong>10. High Card:</strong> If no one has a pair or better, the highest single card wins (e.g., A♠ 10♦ 7♣ 5♥ 3♠ → "Ace High").<br>
+
+                <strong>Tiebreakers:</strong> If two players have the same hand type, the highest rank wins. If still tied, the kicker (highest unmatched card) is considered.<br><br>
+
+                </p>""";
         rules += "<hr><p><b>INTERFACE: </b> Choose action at the bottom of the screen.</p>";
         rules += "</html>";
         return rules;

@@ -11,7 +11,7 @@ import static games.poker.gui.PokerGUIManager.*;
 public class PokerPlayerView extends PokerDeckView {
 
     // ID of player showing
-    int playerId, bet;
+    int playerId, bet, pot;
 
     // Border offsets
     int border = 5;
@@ -25,7 +25,6 @@ public class PokerPlayerView extends PokerDeckView {
         this.height = playerAreaHeight + border + borderBottom;
         this.playerId = playerId;
     }
-
     /**
      * Draws the player's hand and their number of points.
      * @param g - Graphics object.
@@ -38,8 +37,11 @@ public class PokerPlayerView extends PokerDeckView {
         g.setFont(new Font(f.getName(), Font.BOLD, 30));
         if (firstPlayerOfRound) {
             g.drawString("*", border + playerAreaWidth / 2 - 20, border + pokerCardHeight + 25);
+
         }
         g.drawString("" + bet, playerAreaWidth - 50, playerAreaHeight/2);
+        g.drawString("#" + pot, playerAreaWidth - 50, playerAreaHeight - 10  );
+
         g.setFont(f);
     }
 
@@ -56,6 +58,7 @@ public class PokerPlayerView extends PokerDeckView {
         this.component = gameState.getPlayerDecks().get(playerId);
         firstPlayerOfRound = gameState.getFirstPlayer() == playerId;
         bet = gameState.getPlayerBet()[playerId].getValue();
+        pot = gameState.getPlayerMoney()[playerId].getValue();
     }
 
     // Getters, setters

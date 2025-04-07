@@ -22,21 +22,18 @@ public abstract class Component {
         this.componentName = name;
         this.properties = new HashMap<>();
     }
-
     public Component(ComponentType type) {
         this.componentID = ID++;
         this.type = type;
         this.componentName = type.toString();
         this.properties = new HashMap<>();
     }
-
     protected Component(ComponentType type, String name, int componentID) {
         this.componentID = componentID;
         this.type = type;
         this.componentName = name;
         this.properties = new HashMap<>();
     }
-
     protected Component(ComponentType type, int componentID) {
         this.componentID = componentID;
         this.type = type;

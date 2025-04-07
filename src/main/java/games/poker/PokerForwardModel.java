@@ -116,7 +116,7 @@ public class PokerForwardModel extends StandardForwardModel {
     }
 
     @Override
-    protected void _afterAction(AbstractGameState gameState, AbstractAction action) {
+    public void _afterAction(AbstractGameState gameState, AbstractAction action) {
         // Check end of street to add more community cards
         PokerGameState pgs = (PokerGameState) gameState;
         PokerGameParameters pgp = (PokerGameParameters) gameState.getGameParameters();
@@ -351,7 +351,7 @@ public class PokerForwardModel extends StandardForwardModel {
     }
 
     @Override
-    protected List<AbstractAction> _computeAvailableActions(AbstractGameState gameState) {
+    public List<AbstractAction> _computeAvailableActions(AbstractGameState gameState) {
         PokerGameState pgs = (PokerGameState) gameState;
         PokerGameParameters pgp = (PokerGameParameters) gameState.getGameParameters();
 
@@ -406,4 +406,5 @@ public class PokerForwardModel extends StandardForwardModel {
 
         return actions;
     }
+
 }

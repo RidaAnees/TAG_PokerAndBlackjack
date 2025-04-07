@@ -1,5 +1,4 @@
 package core;
-
 import core.interfaces.IGamePhase;
 import utilities.Hash;
 

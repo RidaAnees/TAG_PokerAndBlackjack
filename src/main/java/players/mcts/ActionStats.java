@@ -1,10 +1,5 @@
 package players.mcts;
 
-import core.actions.AbstractAction;
-
-import javax.swing.*;
-import java.util.*;
-
 public class ActionStats {
     // Total value of this node
     public double[] totValue;
