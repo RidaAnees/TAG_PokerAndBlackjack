@@ -8,6 +8,9 @@ import games.poker.PokerGameState;
 import games.poker.components.MoneyPot;
 import gui.GamePanel;
 import gui.IScreenHighlight;
+import players.ISMCTS.ISMCTSPlayer;
+//import players.ISMCTS.ISMCTSTreeGUI;
+import players.ISMCTS.InformationSet;
 import players.human.ActionController;
 import utilities.ImageIO;
 import utilities.Pair;
@@ -75,20 +78,32 @@ public class PokerGUIManager extends AbstractGUIManager {
                 JPanel rules = new JPanel();
 
                 JPanel scores = new JPanel();
-                JPanel calculations = new JPanel();
+
+                // displaying ISMCTS tree
+//                PokerGameState currentGameState = (PokerGameState) gameState;
+//                JPanel calculations = new JPanel();
+//                calculations.setLayout(new BorderLayout());
+//                ISMCTSTreeGUI treeGUI = new ISMCTSTreeGUI();
+//                calculations.add(treeGUI.getTreePanel(), BorderLayout.CENTER);
+//                int playerId = currentGameState.getCurrentPlayer();
+//                InformationSet infoSet = new InformationSet(currentGameState, playerId);
+//                ISMCTSPlayer.ISMCTSTreeNode rootNode = new ISMCTSPlayer.ISMCTSTreeNode(infoSet, null, null);  // Ensure valid data
+//                treeGUI.updateTree(rootNode);  // Update the tree view
+//                pane.add("Calculations", calculations);
+//                calculations.setBackground(new Color(23, 108, 25, 111));
+//                pane.add("Calculations", calculations);
+
 
 
                 pane.add("Main", main);
                 pane.add("Rules", rules);
                 pane.add("Scores", scores);
-                pane.add("Calculations", calculations);
 
 
                 JLabel ruleText = new JLabel(getRuleText());
                 rules.add(ruleText);
                 rules.setBackground(new Color(43, 108, 25, 111));
                 scores.setBackground(new Color(23, 108, 25, 111));
-                calculations.setBackground(new Color(23, 108, 25, 111));
 
                 potMoney = new JLabel();
                 currentBets = new JLabel();
@@ -186,16 +201,14 @@ public class PokerGUIManager extends AbstractGUIManager {
                 main.add(mainGameArea, BorderLayout.CENTER);
                 scores.add(infoPanel, BorderLayout.CENTER);
                 main.add(actionPanel, BorderLayout.SOUTH);
-                // TODO: calculations.add(calcsPanel, BorderLayout.CENTER);
 
                 pane.add("Main", main);
                 pane.add("Rules", rules);
                 pane.add("Scores", scores);
-                pane.add("Calculations", calculations);
 
                 parent.setLayout(new BorderLayout());
                 parent.add(pane, BorderLayout.CENTER);
-                parent.setPreferredSize(new Dimension(width, height + defaultActionPanelHeight + defaultInfoPanelHeight + defaultCardHeight + 35));
+                parent.setPreferredSize(new Dimension(width, height + defaultActionPanelHeight + defaultInfoPanelHeight + defaultCardHeight));
                 parent.revalidate();
                 parent.setVisible(true);
                 parent.repaint();
@@ -312,6 +325,7 @@ public class PokerGUIManager extends AbstractGUIManager {
                         playerHands[i].setBorder(playerViewBorders[i]);
                     }
                 }
+                toggleCardsVisibility();  // Ensure that all cards are visible at the end of the round
 
                 Pair<Map<Integer, Integer>, Map<Integer, Set<Integer>>> translated = pfm.translatePokerHands(pgs);
                 Map<Integer, Integer> ranks = translated.a;
@@ -378,6 +392,11 @@ public class PokerGUIManager extends AbstractGUIManager {
     private String getRuleText() {
         String rules = "<html><center><h1>Poker</h1></center><br/><hr><br/>";
         rules += """
+                <br>
+                <br>
+                <br>
+                <h1> Poker Texas Hold 'em
+                <br>
                 <p>Objective: Win chips by having the best hand at showdown or forcing opponents to fold.<br><br>
 
                 <strong>Blinds:</strong> Two players post forced bets—Small Blind (SB) and Big Blind (BB)—before cards are dealt.<br><br>

@@ -4,27 +4,142 @@ import core.AbstractGameState;
 import core.AbstractPlayer;
 import core.actions.AbstractAction;
 import games.poker.PokerForwardModel;
+import games.poker.PokerGameState;
 import players.IAnyTimePlayer;
 import utilities.Pair;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ISMCTSPlayer extends AbstractPlayer implements IAnyTimePlayer {
     private final ISMCTSParams params;
     private final Random random;
-    private Map<Integer, ISMCTSTree> playerTrees;
     private PokerForwardModel forwardModel;
     private Pair<Integer, AbstractAction> lastAction;
     private ISMCTSTreeNode root;
+
+    public static class ISMCTSTreeNode {
+        public InformationSet state;
+        public ISMCTSTreeNode parent;
+        public AbstractAction action;
+        public Map<AbstractAction, ISMCTSTreeNode> children = new HashMap<>();
+        public double visitCount;
+        public double totalReward;
+
+        public ISMCTSTreeNode(InformationSet state, ISMCTSTreeNode parent, AbstractAction action) {
+            this.state = state;
+            this.parent = parent;
+            this.action = action;
+            this.visitCount = 0;
+            this.totalReward = 0;
+        }
+
+        public static ISMCTSTreeNode createRootNode(ISMCTSPlayer ismctsPlayer, AbstractGameState gameState, Random random) {
+            InformationSet initialState = new InformationSet((PokerGameState) gameState.copy(), gameState.getCurrentPlayer());
+            return new ISMCTSTreeNode(initialState, null, null);
+        }
+
+        public void addChild(AbstractAction action, ISMCTSTreeNode child) {
+            children.put(action, child);
+        }
+
+        public ISMCTSTreeNode getChild(AbstractAction action) {
+            return children.get(action);
+        }
+
+        public void mctsSearch(long timeLimitMillis, ISMCTSPlayer ismctsPlayer) {
+            long startTime = System.currentTimeMillis();
+            while (System.currentTimeMillis() - startTime < timeLimitMillis) {
+                ISMCTSTreeNode selectedNode = this.selectNode(ismctsPlayer);
+                if (selectedNode.state != null && !selectedNode.state.getGameState().isGameOver()) {
+                    List<AbstractAction> possibleActions = ismctsPlayer.forwardModel.computeAvailableActions(selectedNode.state.getGameState());
+                    if (!possibleActions.isEmpty()) {
+                        ISMCTSTreeNode expandedNode = selectedNode.expand(possibleActions, ismctsPlayer.forwardModel, ismctsPlayer.random);
+                        double reward = ismctsPlayer.rollout(expandedNode);
+                        expandedNode.backpropagate(reward);
+                    } else {
+                        selectedNode.backpropagate(selectedNode.state.getGameState().getGameScore(selectedNode.state.getPlayerId()));
+                    }
+                } else if (selectedNode.state != null) {
+                    selectedNode.backpropagate(selectedNode.state.getGameState().getGameScore(selectedNode.state.getPlayerId()));
+                }
+            }
+        }
+
+        private ISMCTSTreeNode selectNode(ISMCTSPlayer ismctsPlayer) {
+            ISMCTSTreeNode current = this;
+            while (!current.children.isEmpty()) {
+                current = current.selectUCTChild(
+                        current.parent != null ? current.parent.visitCount : 1,
+                        current.state.getPlayerId(),
+                        current.state.getGameState().getNPlayers(),
+                        ismctsPlayer.getParameters()
+                );
+            }
+            return current;
+        }
+
+        private ISMCTSTreeNode selectUCTChild(double parentVisits, int playerId, int nPlayers, ISMCTSParams params) {
+            ISMCTSTreeNode bestChild = null;
+            double bestValue = -Double.MAX_VALUE;
+
+            for (ISMCTSTreeNode child : children.values()) {
+                double uctValue = child.totalReward / (child.visitCount + 1e-6) +
+                        params.K * Math.sqrt(Math.log(parentVisits + 1) / (child.visitCount + 1e-6));
+                if (uctValue > bestValue) {
+                    bestValue = uctValue;
+                    bestChild = child;
+                }
+            }
+            return bestChild;
+        }
+
+        private ISMCTSTreeNode expand(List<AbstractAction> possibleActions, PokerForwardModel forwardModel, Random random) {
+            int actingPlayer = state.getGameState().getCurrentPlayer();
+            for (AbstractAction action : possibleActions) {
+                AbstractGameState nextGameState = state.getGameState().copy();
+                forwardModel.next(nextGameState, action);
+                InformationSet nextState = new InformationSet((PokerGameState) nextGameState, actingPlayer);
+                ISMCTSTreeNode newNode = new ISMCTSTreeNode(nextState, this, action);
+                children.put(action, newNode);
+            }
+
+            if (children.isEmpty()) return null;
+
+            List<ISMCTSTreeNode> childList = new ArrayList<>(children.values());
+            return childList.get(random.nextInt(childList.size()));
+        }
+
+        private void backpropagate(double reward) {
+            visitCount++;
+            totalReward += reward;
+            if (parent != null) {
+                parent.backpropagate(reward);
+            }
+        }
+
+        public AbstractAction bestAction() {
+            if (children.isEmpty()) return null;
+
+            AbstractAction bestAction = null;
+            double bestValue = -Double.MAX_VALUE;
+
+            for (Map.Entry<AbstractAction, ISMCTSTreeNode> entry : children.entrySet()) {
+                ISMCTSTreeNode childNode = entry.getValue();
+                double value = childNode.totalReward / (childNode.visitCount + 1e-6);
+
+                if (value > bestValue) {
+                    bestValue = value;
+                    bestAction = entry.getKey();
+                }
+            }
+            return bestAction;
+        }
+    }
 
     public ISMCTSPlayer(ISMCTSParams params) {
         super(params, "ISMCTSPlayer");
         this.params = params;
         this.random = new Random();
-        this.playerTrees = new HashMap<>();
         this.forwardModel = new PokerForwardModel();
     }
 
@@ -55,61 +170,64 @@ public class ISMCTSPlayer extends AbstractPlayer implements IAnyTimePlayer {
         createRootNode(gameState);
         long timeTaken = System.nanoTime() - currentTimeNano;
 
-        root.mctsSearch(timeTaken / 1000000);
-
-        lastAction = new Pair<>(gameState.getCurrentPlayer(), root.bestAction());
-        return lastAction.b.copy();
+        if (root != null) {
+            root.mctsSearch((timeTaken / 1_000_000) + params.budget, this);
+            lastAction = new Pair<>(gameState.getCurrentPlayer(), root.bestAction());
+            return lastAction.b.copy();
+        } else {
+            return possibleActions.get(random.nextInt(possibleActions.size()));
+        }
     }
 
     protected void createRootNode(AbstractGameState gameState) {
-        ISMCTSTreeNode newRoot = newRootNode(gameState);
-        if (newRoot == null) {
+        if (root == null) {
             root = ISMCTSTreeNode.createRootNode(this, gameState, random);
+        } else if (params.reuseTree) {
+            ISMCTSTreeNode newRoot = backtrack(root, gameState);
+            root = (newRoot != null) ? newRoot : ISMCTSTreeNode.createRootNode(this, gameState, random);
         } else {
-            root = newRoot;
+            root = ISMCTSTreeNode.createRootNode(this, gameState, random);
         }
-    }
-
-    protected ISMCTSTreeNode newRootNode(AbstractGameState gameState) {
-        if (params.reuseTree && root != null) {
-            return backtrack(root, gameState);
-        }
-        return null;
     }
 
     protected ISMCTSTreeNode backtrack(ISMCTSTreeNode startingRoot, AbstractGameState gameState) {
         List<Pair<Integer, AbstractAction>> history = gameState.getHistory();
-        Pair<Integer, AbstractAction> lastExpected = lastAction;
         ISMCTSTreeNode newRoot = startingRoot;
         int rootPlayer = startingRoot.state.getPlayerId();
-        for (int backwardLoop = history.size() - 1; backwardLoop >= 0; backwardLoop--) {
-            if (history.get(backwardLoop).equals(lastExpected)) {
-                for (int forwardLoop = backwardLoop; forwardLoop < history.size(); forwardLoop++) {
-                    if (history.get(forwardLoop).a != rootPlayer) continue;
-                    AbstractAction action = history.get(forwardLoop).b;
-                    int nextActionPlayer = forwardLoop < history.size() - 1 ? history.get(forwardLoop + 1).a : gameState.getCurrentPlayer();
-                    if (newRoot.children != null && newRoot.children.get(action) != null) {
-                        newRoot = newRoot.children.get(action);
-                    } else {
-                        newRoot = null;
-                    }
-                    if (newRoot == null) break;
-                }
-                break;
+
+        for (int i = history.size() - 1; i >= 0; i--) {
+            Pair<Integer, AbstractAction> playedAction = history.get(i);
+            if (playedAction.a == rootPlayer && newRoot.children.containsKey(playedAction.b)) {
+                newRoot = newRoot.children.get(playedAction.b);
+            } else {
+                return null;
             }
         }
         return newRoot;
     }
 
+    private double rollout(ISMCTSTreeNode node) {
+        AbstractGameState rolloutState = node.state.getGameState().copy();
+        int rolloutLength = params.rolloutLength;
+
+        for (int i = 0; i < rolloutLength && !rolloutState.isGameOver(); i++) {
+            List<AbstractAction> possibleActions = forwardModel.computeAvailableActions(rolloutState);
+            if (possibleActions.isEmpty()) break;
+            AbstractAction action = possibleActions.get(random.nextInt(possibleActions.size()));
+            forwardModel.next(rolloutState, action);
+        }
+
+        return rolloutState.getGameScore(node.state.getPlayerId());
+    }
+
     @Override
     public void finalizePlayer(AbstractGameState state) {
-        // Implement game over event handling here
+        // Optional clean-up
     }
 
     @Override
     public ISMCTSPlayer copy() {
-        ISMCTSPlayer retValue = new ISMCTSPlayer((ISMCTSParams) getParameters().copy());
-        return retValue;
+        return new ISMCTSPlayer((ISMCTSParams) getParameters().copy());
     }
 
     @Override
@@ -123,3 +241,8 @@ public class ISMCTSPlayer extends AbstractPlayer implements IAnyTimePlayer {
         return params.budget;
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+}

@@ -838,9 +838,9 @@ public class Game {
         ArrayList<AbstractPlayer> players = new ArrayList<>();
 
         ActionController ac = new ActionController();
-        AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
-        players.add(humanPlayer);
-
+//        AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
+//        players.add(humanPlayer);
+//
         BasicMCTSParams params2 = new BasicMCTSParams();
         players.add(new BasicMCTSPlayer(params2));
 
@@ -863,7 +863,7 @@ public class Game {
 //        ISMCTSwithStats isw = new ISMCTSwithStats(players);
 
 
-//        players.add(new RandomPlayer());
+        players.add(new RandomPlayer());
 //
 //        MASTPlayerParams playerParams = new MASTPlayerParams();
 //        MASTPlayer playerFromParams = (MASTPlayer) playerParams.instantiate();
@@ -891,13 +891,12 @@ public class Game {
           String gameParams = null;
 //
 //        /* Run! */
-          runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
-
+//          runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
         /* Run multiple games */
-//        ArrayList<GameType> games = new ArrayList<>();
-//        games.add(Connect4);
-//        runMany(games, players, 100L, 5, false, false, null, turnPause);
-//        runMany(new ArrayList<GameType>() {{add(Uno);}}, players, 100L, 100, false, false, null, turnPause);
+        ArrayList<GameType> games = new ArrayList<>();
+        games.add(GameType.Poker);
+        runMany(games, players, 100L, 10, false, true, null, turnPause);
+        //runMany(new ArrayList<GameType>() {{add(GameType.Poker);}}, players, 100L, 100, false, false, null, turnPause);
     }
 
 }
