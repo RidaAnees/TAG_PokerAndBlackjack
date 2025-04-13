@@ -89,3 +89,4 @@ You can also find out more about the [QMUL Game AI Group](http://gameai.eecs.qmu
 
 This work was partly funded by the EPSRC CDT in Intelligent Games and Game Intelligence (IGGI)  EP/L015846/1 and EPSRC research grant EP/T008962/1.
 "# TAG_PokerAndBlackjack" 
+.
