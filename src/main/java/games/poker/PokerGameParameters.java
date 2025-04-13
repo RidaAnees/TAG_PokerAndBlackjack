@@ -27,6 +27,7 @@ public class PokerGameParameters extends TunableParameters {
     public int bigBlind = 10;
     public double[] raiseMultipliers = new double[]{1., 2., 3., 4.};
     public int bet = 5;
+    public boolean isAggressivePlayer = false;
 
     public PokerGameParameters() {
         addTunableParameter("maxRounds", 10, Arrays.asList(1, 5, 10, 15, 20));
@@ -40,6 +41,8 @@ public class PokerGameParameters extends TunableParameters {
         addTunableParameter("smallBlind", 5, Arrays.asList(1, 5, 10, 15, 20));
         addTunableParameter("bigBlind", 10, Arrays.asList(2, 10, 20, 30, 40));
         addTunableParameter("bet", 5, Arrays.asList(1, 5, 10, 15, 20));
+        addTunableParameter("isAggressivePlayer", false, Arrays.asList(true, false));
+
         _reset();
     }
 
@@ -56,6 +59,8 @@ public class PokerGameParameters extends TunableParameters {
         smallBlind = (int) getParameterValue("smallBlind");
         bigBlind = (int) getParameterValue("bigBlind");
         bet = (int) getParameterValue("bet");
+        isAggressivePlayer = (boolean) getParameterValue("isAggressivePlayer");
+
     }
 
     public String getDataPath() {

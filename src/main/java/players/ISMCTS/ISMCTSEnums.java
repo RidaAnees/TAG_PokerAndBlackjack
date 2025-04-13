@@ -3,16 +3,16 @@ package players.ISMCTS;
 public class ISMCTSEnums {
 
     public enum SelectionStrategies {
-        RANDOM, //purely random activities
-        BUCKET_BASED,
-        PARAMS,
-        DEFAULT_SELECTION
+        RANDOM, //purely random selection
+        BUCKET_BASED, //based on hand strength buckets //TODO
+        PARAMS, //Parametrized strategies
+        DEFAULT_SELECTION //default fallback
     }
 
     public enum ExplorationStrategies{
         MAST,
         HEURISTIC,
-        HYBRID,
+        HYBRID, //TODO
         DEFAULT_EXPLORATION
     }
 
@@ -37,8 +37,8 @@ public class ISMCTSEnums {
     // Hand Bucket Strategies (Poker Specific)
     public enum BucketActionSelection {
         RANDOM, // Random action within bucket
-        AGGRESSIVE, // Bet/raise more often
-        PASSIVE, // Check/call more often
+        AGGRESSIVE, // raise more often
+        PASSIVE, // /call more often
         BALANCED // Mixed strategy
     }
 

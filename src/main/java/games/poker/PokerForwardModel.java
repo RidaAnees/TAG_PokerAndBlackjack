@@ -19,6 +19,7 @@ import static core.CoreConstants.GameResult.LOSE_GAME;
 
 
 public class PokerForwardModel extends StandardForwardModel {
+    private Map<Integer, List<AbstractAction>> playerActions;
 
     @Override
     protected void _setup(AbstractGameState firstState) {
@@ -49,6 +50,11 @@ public class PokerForwardModel extends StandardForwardModel {
 
         // Set up first round
         setupRound(pgs);
+
+        playerActions = new HashMap<>();
+        for (int i = 0; i < firstState.getNPlayers(); i++) {
+            playerActions.put(i, new ArrayList<>());
+        }
     }
 
     /**
@@ -123,9 +129,6 @@ public class PokerForwardModel extends StandardForwardModel {
 
         checkMoney(pgs);
 
-        // So - playerNeedsToCall means that they still have a decision to make
-        // playerActStreet means that they have acted at least once
-        // a player is only out of the phase if they have acted, and do not need to call
 
         pgs.playerActStreet[pgs.getCurrentPlayer()] = true;
         if (pgs.isRoundOver()) {

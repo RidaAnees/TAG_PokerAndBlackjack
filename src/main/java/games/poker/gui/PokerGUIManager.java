@@ -10,7 +10,7 @@ import gui.GamePanel;
 import gui.IScreenHighlight;
 import players.ISMCTS.ISMCTSPlayer;
 //import players.ISMCTS.ISMCTSTreeGUI;
-import players.ISMCTS.InformationSet;
+//import players.ISMCTS.InformationSet;
 import players.human.ActionController;
 import utilities.ImageIO;
 import utilities.Pair;
