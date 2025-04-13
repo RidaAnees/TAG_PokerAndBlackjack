@@ -1,22 +1,24 @@
-package players.ISMCTS;
+package players.gr9.poker;
 
+import core.AbstractGameState;
 import core.interfaces.IStateHeuristic;
 import players.PlayerParameters;
-import players.simple.RandomPlayer;
 
-import java.util.Arrays;
-import java.util.Random;
 public class ISMCTSParams extends PlayerParameters {
-    public double K = 1.33;// UCB1 exploration
-    public int rolloutLength = 10;
+    public double K = 2;// UCB1 exploration
+    public int rolloutLength = 20;
     public boolean reuseTree = false;
     public int budget = 3000;// Time or iteration budget in milliseconds
+    public double epsilon = 1e-6;
+    public IStateHeuristic heuristic = AbstractGameState::getHeuristicScore;
 
     public ISMCTSParams() {
         addTunableParameter("K", K);
         addTunableParameter("rolloutLength", rolloutLength);
-        addTunableParameter("budget", budget);
         addTunableParameter("reuseTree", reuseTree);
+        addTunableParameter("budget", budget);
+        addTunableParameter("epsilon", 1e-6);
+        addTunableParameter("heuristic", (IStateHeuristic) AbstractGameState::getHeuristicScore);
     }
 
     @Override

@@ -56,7 +56,6 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     public PokerGameState(AbstractParameters gameParameters, int nPlayers) {
         super(gameParameters, nPlayers);
         isAggressive = new boolean[nPlayers]; // Default value is false for all players
-
     }
 
     @Override
@@ -78,7 +77,6 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
 
     public void placeBet(int amount, int player) {
         isAggressive[player] = true;
-
         // Check which pot this player is participating in, update the one that's not reached max
         int m = amount;
         MoneyPot noLimitPot = null;
@@ -284,7 +282,7 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     }
 
     @Override
-    protected AbstractGameState _copy(int playerId) {
+    protected PokerGameState _copy(int playerId) {
         PokerGameState copy = new PokerGameState(gameParameters.copy(), getNPlayers());
         copy.communityCards = communityCards.copy();
         copy.moneyPots = new ArrayList<>();
@@ -326,7 +324,6 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     public double getPlayerScore(int playerId) {
         return playerMoney[playerId].getValue();
     }
-
     public Deck<FrenchCard> getPlayerHand(int p) {
         return playerDecks.get(p).copy();
     }

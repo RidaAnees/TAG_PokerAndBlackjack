@@ -44,12 +44,19 @@ public class BlackjackGUIManager extends AbstractGUIManager {
                 JPanel main = new JPanel();
                 main.setOpaque(false);
                 main.setLayout(new BorderLayout());
+
                 JPanel rules = new JPanel();
+
+                JPanel actions = new JPanel();
+
                 pane.add("Main", main);
                 pane.add("Rules", rules);
+                pane.add("Actions", actions);
+
                 JLabel ruleText = new JLabel(getRuleText());
                 rules.add(ruleText);
                 rules.setBackground(new Color(43, 108, 25, 111));
+                actions.setBackground(new Color(43, 108, 25, 111));
 
                 activePlayer = gameState.getCurrentPlayer();
 
@@ -113,11 +120,14 @@ public class BlackjackGUIManager extends AbstractGUIManager {
 
                 // Add all views to frame
                 main.add(mainGameArea, BorderLayout.CENTER);
-                main.add(infoPanel, BorderLayout.NORTH);
                 main.add(actionPanel, BorderLayout.SOUTH);
+
+                actions.add(infoPanel, BorderLayout.NORTH);
 
                 pane.add("Main", main);
                 pane.add("Rules", rules);
+                pane.add("Actions", actions);
+
 
                 parent.setLayout(new BorderLayout());
                 parent.add(pane, BorderLayout.CENTER);
@@ -127,6 +137,7 @@ public class BlackjackGUIManager extends AbstractGUIManager {
                 parent.repaint();
             }
         }
+
     }
 
     @Override

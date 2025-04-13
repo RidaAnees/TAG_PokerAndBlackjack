@@ -31,20 +31,36 @@ public class Hit extends AbstractAction implements IPrintable {
     }
 
     @Override
-    public boolean execute(AbstractGameState gameState){
+    public boolean execute(AbstractGameState gameState) {
         BlackjackGameState bjgs = (BlackjackGameState) gameState;
         PartialObservableDeck<FrenchCard> playerHand = bjgs.getPlayerDecks().get(playerID);
+
+        // Ensure that the drawDeck is correctly initialized (not null)
+        if (bjgs.getDrawDeck() == null) {
+            throw new IllegalStateException("Draw deck is not initialized.");
+        }
+
+        if (bjgs.getDrawDeck().getSize() == 0) {
+            throw new IllegalStateException("Draw deck is empty. Cannot draw a card.");
+        }
+        // Draw a card from the deck
+        FrenchCard drawnCard = bjgs.getDrawDeck().draw();  // Draw card from the deck
+
+        // Check if the drawn card is null (it should never be null)
+        if (drawnCard == null) {
+            throw new IllegalStateException("Draw returned a null card. This should not happen.");
+        }
         if (playerID != bjgs.getDealerPlayer()) {
-            playerHand.add(bjgs.getDrawDeck().draw());
+            playerHand.add(drawnCard);
         } else {
-            // Dealer
             boolean[] visibility = new boolean[gameState.getNPlayers()];
-            Arrays.fill(visibility, !hidden);
-            playerHand.add(bjgs.getDrawDeck().draw(), visibility);
+            Arrays.fill(visibility, !hidden);  // Dealer cards are visible based on the 'hidden' flag
+            playerHand.add(drawnCard, visibility);
         }
 
         return true;
     }
+
 
     @Override
     public AbstractAction copy() {
@@ -77,5 +93,9 @@ public class Hit extends AbstractAction implements IPrintable {
     @Override
     public String toString() {
         return "Hit";
+    }
+
+    public int getPlayerID() {
+        return this.playerID;
     }
 }

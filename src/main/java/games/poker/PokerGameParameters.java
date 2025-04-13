@@ -42,7 +42,6 @@ public class PokerGameParameters extends TunableParameters {
         addTunableParameter("bigBlind", 10, Arrays.asList(2, 10, 20, 30, 40));
         addTunableParameter("bet", 5, Arrays.asList(1, 5, 10, 15, 20));
         addTunableParameter("isAggressivePlayer", false, Arrays.asList(true, false));
-
         _reset();
     }
 

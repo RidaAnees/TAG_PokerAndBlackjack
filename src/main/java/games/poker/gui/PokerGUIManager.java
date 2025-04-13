@@ -8,7 +8,6 @@ import games.poker.PokerGameState;
 import games.poker.components.MoneyPot;
 import gui.GamePanel;
 import gui.IScreenHighlight;
-import players.ISMCTS.ISMCTSPlayer;
 //import players.ISMCTS.ISMCTSTreeGUI;
 //import players.ISMCTS.InformationSet;
 import players.human.ActionController;
@@ -21,7 +20,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 public class PokerGUIManager extends AbstractGUIManager {
     // Settings for display areas

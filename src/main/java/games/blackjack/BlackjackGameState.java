@@ -13,6 +13,8 @@ import games.GameType;
 import java.util.ArrayList;
 import java.util.*;
 
+import static core.CoreConstants.GameResult.GAME_ONGOING;
+
 public class BlackjackGameState extends AbstractGameState implements IPrintable {
     List<PartialObservableDeck<FrenchCard>> playerDecks;
     Deck<FrenchCard> drawDeck;
@@ -40,7 +42,6 @@ public class BlackjackGameState extends AbstractGameState implements IPrintable 
             add(drawDeck);
         }};
     }
-
 
     public Deck<FrenchCard> getDrawDeck() {
         return drawDeck;
@@ -121,7 +122,7 @@ public class BlackjackGameState extends AbstractGameState implements IPrintable 
     }
 
     @Override
-    protected double _getHeuristicScore(int playerId) {
+    public double _getHeuristicScore(int playerId) {
         CoreConstants.GameResult playerResult = getPlayerResults()[playerId];
         if (playerResult == CoreConstants.GameResult.LOSE_GAME)
             return -1;
@@ -191,4 +192,16 @@ public class BlackjackGameState extends AbstractGameState implements IPrintable 
         }
     }
 
+    public boolean gameOver(BlackjackGameState gs) {
+        if (gs.getGameStatus() != GAME_ONGOING){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isPlayerEliminated(int i) {
+        int playerScore = calculatePoints(i);
+        CoreConstants.GameResult playerResult = getPlayerResults()[i];
+        return playerScore > 21 || playerResult == CoreConstants.GameResult.LOSE_GAME;
+    }
 }

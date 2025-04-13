@@ -409,5 +409,4 @@ public class PokerForwardModel extends StandardForwardModel {
 
         return actions;
     }
-
 }

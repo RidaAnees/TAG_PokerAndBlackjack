@@ -1,4 +1,4 @@
-package players.ISMCTS;
+package players.gr9.poker;
 
 public class ISMCTSEnums {
 

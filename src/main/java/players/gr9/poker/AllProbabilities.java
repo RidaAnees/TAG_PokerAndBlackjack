@@ -1,4 +1,4 @@
-package players.ISMCTS.poker;
+package players.gr9.poker;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +19,8 @@ public class AllProbabilities implements BeliefDistribution {
         // DRY_AGGRESSIVE
         allProbabilities.put(BoardAndPlayStyle.DRY_AGGRESSIVE, new HashMap<>());
         allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.20);
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.22);
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.22);
+//        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.22);
+//        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.22);
         allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPAB, 0.02);
         allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPBB, 0.02);
         allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TR, 0.32);
@@ -37,8 +37,8 @@ public class AllProbabilities implements BeliefDistribution {
         // WET_AGGRESSIVE
         allProbabilities.put(BoardAndPlayStyle.WET_AGGRESSIVE, new HashMap<>());
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.40);
-        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.25);
-        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.15);
+//        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.25);
+//        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.15);
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PPAB, 0.10);
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PPBB, 0.05);
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TR, 0.05);
@@ -46,8 +46,8 @@ public class AllProbabilities implements BeliefDistribution {
         // WET_PASSIVE
         allProbabilities.put(BoardAndPlayStyle.WET_PASSIVE, new HashMap<>());
         allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPSK, 0.08);
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPGK, 0.12);
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPWK, 0.20);
+//        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPGK, 0.12);
+//        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPWK, 0.20);
         allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPAB, 0.25);
         allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPBB, 0.20);
         allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TR, 0.15);
