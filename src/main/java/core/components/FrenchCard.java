@@ -106,4 +106,9 @@ public class FrenchCard extends Card {
         }
         return null;
     }
+
+    public int getNumber() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getNumber'");
+    }
 }

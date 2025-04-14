@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
+import games.blackjack.actions.EVBasedBlackjackAgent;
 
 public class Game {
 
@@ -829,7 +829,7 @@ public class Game {
      * and then run this class.
      */
     public static void main(String[] args) {
-        String gameType = Utils.getArg(args, "game", "Poker");
+        String gameType = Utils.getArg(args, "game", "Blackjack");
         boolean useGUI = Utils.getArg(args, "gui", true);
         int turnPause = Utils.getArg(args, "turnPause", 100);
         long seed = Utils.getArg(args, "seed", System.currentTimeMillis());
@@ -880,7 +880,8 @@ public class Game {
 //
 //        players.add(new OSLAPlayer());
 //        players.add(new RMHCPlayer());
-//          players.add(new HumanGUIPlayer(ac));
+          players.add(new HumanGUIPlayer(ac));
+          players.add(new EVBasedBlackjackAgent());
 //          players.add(new HumanGUIPlayer(ac));
 //          players.add(new HumanConsolePlayer());
 //          players.add(new HumanConsolePlayer());

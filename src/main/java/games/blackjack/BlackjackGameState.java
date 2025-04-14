@@ -191,4 +191,9 @@ public class BlackjackGameState extends AbstractGameState implements IPrintable 
         }
     }
 
+    public boolean isPlayerEliminated(int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isPlayerEliminated'");
+    }
+
 }
