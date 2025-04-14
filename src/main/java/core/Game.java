@@ -829,7 +829,7 @@ public class Game {
      * and then run this class.
      */
     public static void main(String[] args) {
-        String gameType = Utils.getArg(args, "game", "Poker");
+        String gameType = Utils.getArg(args, "game", "Blackjack");
         boolean useGUI = Utils.getArg(args, "gui", true);
         int turnPause = Utils.getArg(args, "turnPause", 100);
         long seed = Utils.getArg(args, "seed", System.currentTimeMillis());
@@ -841,8 +841,8 @@ public class Game {
         AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
         players.add(humanPlayer);
 
-        BasicMCTSParams params2 = new BasicMCTSParams();
-        players.add(new BasicMCTSPlayer(params2));
+       //BasicMCTSParams params2 = new BasicMCTSParams();
+        //players.add(new BasicMCTSPlayer(params2));
 
 //        MCTSParams params = new MCTSParams();
 //        AbstractPlayer mctsPlayer = new MCTSPlayer(params);
@@ -854,9 +854,26 @@ public class Game {
 //         */
 //
         //without game stats: (keep for both)
-        ISMCTSParams ismctsParams = new ISMCTSParams();
-        AbstractPlayer ismctsPlayer = new ISMCTSPlayer(ismctsParams);
-        players.add(ismctsPlayer );
+       // ISMCTSParams ismctsParams = new ISMCTSParams();
+       //AbstractPlayer ismctsPlayer = new ISMCTSPlayer(ismctsParams);
+       // players.add(ismctsPlayer );  
+
+        //RMHCParams params = new RMHCParams();
+        //params.horizon = 10;
+        //params.heuristic = new Blackjack_Ridhwan();  // your custom heuristic class
+        //AbstractPlayer rmhcPlayer = new RMHCPlayer(params);
+       // players.add(rmhcPlayer);
+
+
+        
+        //players.add(new HumanGUIPlayer(ac));
+
+        RMHCParams params = new RMHCParams();
+        params.horizon = 10;
+        params.heuristic = new Blackjack_Ridhwan();  // your custom heuristic
+        players.add(new RMHCPlayer(params));
+        //players.add(new HumanGUIPlayer(ac));
+      // players.add(new RMHCPlayer(params)); // Now RMHC is Player 1
 //
 //
 //        //with game stats: (comment out for without stats functionality)
