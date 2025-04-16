@@ -5,10 +5,10 @@ import core.interfaces.IStateHeuristic;
 import players.PlayerParameters;
 
 public class ISMCTSParams extends PlayerParameters {
-    public double K = 2;// UCB1 exploration
+    public double K = Math.sqrt(2);// UCB1 exploration
     public int rolloutLength = 20;
     public boolean reuseTree = false;
-    public int budget = 3000;// Time or iteration budget in milliseconds
+    public int budget = 1000;// Time or iteration budget in milliseconds
     public double epsilon = 1e-6;
     public IStateHeuristic heuristic = AbstractGameState::getHeuristicScore;
 

@@ -16,44 +16,47 @@ public class AllProbabilities implements BeliefDistribution {
     private void initializeProbabilities() {
         // Initialize probabilities for each board/play style. These should sum to 1 for each style.
 
-        // DRY_AGGRESSIVE
+        //Board texture_PlayerStyle heuristic; probability hardcoded; however can be dynamically updated
+        // DRY_AGGRESSIVE: Aggressive players on dry boards often bet top/mid pairs and over pairs. Low bluffing with draws
         allProbabilities.put(BoardAndPlayStyle.DRY_AGGRESSIVE, new HashMap<>());
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.20);
-//        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.22);
-//        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.22);
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPAB, 0.02);
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPBB, 0.02);
-        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TR, 0.32);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.30);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPAB, 0.30);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PPBB, 0.05);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.TRifPair, 0.25);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PF, 0.02);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.PS, 0.02);
+        allProbabilities.get(BoardAndPlayStyle.DRY_AGGRESSIVE).put(PokerHandBucket.Other, 0.08);
 
         // DRY_PASSIVE
         allProbabilities.put(BoardAndPlayStyle.DRY_PASSIVE, new HashMap<>());
-        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TPSK, 0.10);
-        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TPGK, 0.20);
-        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TPWK, 0.25);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TPSK, 0.20);
         allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.PPAB, 0.20);
-        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.PPBB, 0.15);
-        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TR, 0.10);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.PPBB, 0.20);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.TRifPair, 0.15);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.PF, 0.03);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.PS, 0.02);
+        allProbabilities.get(BoardAndPlayStyle.DRY_PASSIVE).put(PokerHandBucket.Other, 0.20);
 
         // WET_AGGRESSIVE
         allProbabilities.put(BoardAndPlayStyle.WET_AGGRESSIVE, new HashMap<>());
-        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.40);
-//        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPGK, 0.25);
-//        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPWK, 0.15);
+        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TPSK, 0.10);
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PPAB, 0.10);
         allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PPBB, 0.05);
-        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TR, 0.05);
+        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.TRifPair, 0.15);
+        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PF, 0.25);
+        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.PS, 0.25);
+        allProbabilities.get(BoardAndPlayStyle.WET_AGGRESSIVE).put(PokerHandBucket.Other, 0.10);
 
         // WET_PASSIVE
         allProbabilities.put(BoardAndPlayStyle.WET_PASSIVE, new HashMap<>());
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPSK, 0.08);
-//        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPGK, 0.12);
-//        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPWK, 0.20);
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPAB, 0.25);
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPBB, 0.20);
-        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TR, 0.15);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TPSK, 0.25);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPAB, 0.15);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PPBB, 0.08);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.TRifPair, 0.22);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PF, 0.10);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.PS, 0.10);
+        allProbabilities.get(BoardAndPlayStyle.WET_PASSIVE).put(PokerHandBucket.Other, 0.10);
 
-        // Normalize the initial probabilities for each style
-        //normalizeAllProbabilities();
     }
 
     // Normalize probabilities for each playstyle so they sum to 1

@@ -13,16 +13,17 @@ import gui.AbstractGUIManager;
 import gui.GUI;
 import gui.GamePanel;
 
-
-import players.gr9.blackjack.BlackjackAIParams;
-import players.gr9.blackjack.BlackjackHeuristicPlayer;
-import players.gr9.poker.ISMCTSParams;
-import players.gr9.poker.ISMCTSPlayer;
 import players.basicMCTS.BasicMCTSParams;
 import players.basicMCTS.BasicMCTSPlayer;
+import players.gr9.poker.ISMCTSParams;
+import players.gr9.poker.ISMCTSPlayer;
 import players.human.ActionController;
 import players.human.HumanConsolePlayer;
 import players.human.HumanGUIPlayer;
+import players.mcts.MASTPlayer;
+import players.mcts.MASTPlayerParams;
+import players.mcts.MCTSParams;
+import players.mcts.MCTSPlayer;
 import players.simple.RandomPlayer;
 import utilities.Pair;
 import utilities.Utils;
@@ -836,17 +837,12 @@ public class Game {
         ArrayList<AbstractPlayer> players = new ArrayList<>();
 
         ActionController ac = new ActionController();
-        AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
-        players.add(humanPlayer);
-//        AbstractPlayer humanPlayer3 = new HumanGUIPlayer(ac);
-//        players.add(humanPlayer3);
-//
+//        AbstractPlayer humanPlayer = new HumanGUIPlayer(ac);
+//        players.add(humanPlayer);
+
         BasicMCTSParams params2 = new BasicMCTSParams();
         players.add(new BasicMCTSPlayer(params2));
-
-//        BlackjackAIParams bjAIparams = new BlackjackAIParams();
-//        players.add(new BlackjackHeuristicPlayer());
-
+//
 //        MCTSParams params = new MCTSParams();
 //        AbstractPlayer mctsPlayer = new MCTSPlayer(params);
 //        players.add(mctsPlayer);
@@ -886,15 +882,16 @@ public class Game {
 //          players.add(new FirstActionPlayer());
 //
 //        /* Game parameter configuration. Set to null to ignore and use default parameters */
-        String gameParams = null;
+        //String gameParams = null;
 //
 //        /* Run! */
-        runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
+        //runOne(GameType.valueOf(gameType), gameParams, players, seed, false, null, useGUI ? ac : null, turnPause);
         /* Run multiple games */
-//        ArrayList<GameType> games = new ArrayList<>();
-//        games.add(GameType.Poker);
-//        runMany(games, players, 100L, 50, false, true, null, turnPause);
+        ArrayList<GameType> games = new ArrayList<>();
+        games.add(GameType.Poker);
+        runMany(games, players, 100L, 10, false, true, null, turnPause);
         //runMany(new ArrayList<GameType>() {{add(GameType.Poker);}}, players, 100L, 100, false, false, null, turnPause);
 
     }
+
 }

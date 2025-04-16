@@ -115,4 +115,8 @@ public class FrenchCard extends Card {
         }
         return null;
     }
+    public int getValue() {
+        return number;
+    }
+
 }

@@ -22,7 +22,6 @@ public class PokerHandBuckets {
     public PokerHandBuckets(PokerGameState gameState, List<FrenchCard> holeCards, boolean considerHoleCards) {
         this.considerHoleCards = considerHoleCards;
         this.buckets = new HashMap<>();
-        logger.finest("Initializing PokerHandBuckets with considerHoleCards: \" + considerHoleCard");
         populateBuckets(gameState, holeCards);
     }
 
@@ -33,37 +32,53 @@ public class PokerHandBuckets {
         }
         Deck<FrenchCard> fullDeck = FrenchCard.generateDeck("Full Deck", core.CoreConstants.VisibilityMode.VISIBLE_TO_ALL);
 
-        List<FrenchCard> allRemainingCards = new ArrayList<>(fullDeck.getComponents());
+        Deck<FrenchCard> allRemainingCards = fullDeck.copy();
         allRemainingCards.removeAll(gameState.getCommunityCards().getComponents());
+//        if (!considerHoleCards) {
+//            allRemainingCards.removeAll(holeCards);
+//        }
 
-        if (!considerHoleCards) {
-            allRemainingCards.removeAll(holeCards);
-        }
-
-        List<FrenchCard> communityCards = gameState.getCommunityCards().getComponents();
+        Deck<FrenchCard> communityCards = gameState.getCommunityCards();
         logger.warning("Community Cards: " + communityCards);
-        logger.finest("Remaining cards: " + allRemainingCards);
+
+        buckets.clear();
 
         buckets.put("TPSK", generateTPSK(allRemainingCards, communityCards));
-        logger.finest("TPSK: "+ buckets);
+        logger.log(Level.WARNING,"TPSK: " + buckets);
         buckets.put("PPAB", generatePPAB(allRemainingCards, communityCards));
-        logger.finest("PPAB: "+ buckets);
+        logger.log(Level.WARNING,"PPAB: " + buckets);
         buckets.put("PPBB", generatePPBB(allRemainingCards, communityCards));
-        logger.finest("PPBB: "+ buckets);
-        buckets.put("TR", generateTR(allRemainingCards, communityCards));
-        logger.finest("TR: "+ buckets);
+        buckets.put("TRifPair", generateTRifPair(allRemainingCards, communityCards));
+        buckets.put("PF", generatePotentialFlush(allRemainingCards, communityCards));
+        buckets.put("PS", generatePotentialStraights(allRemainingCards, communityCards));
+
+        // Track all cards used in any of the above hands
+        Set<String> usedPairs = new HashSet<>();
+        for (List<List<FrenchCard>> handList : buckets.values()) {
+            for (List<FrenchCard> pair : handList) {
+                usedPairs.add(getCardPairKey(pair.get(0), pair.get(1)));
+            }
+        }
+
+        // Build the "Other" bucket
+        List<List<FrenchCard>> otherHands = new ArrayList<>();
+        for (int i = 0; i < allRemainingCards.getSize(); i++) {
+            for (int j = i + 1; j < allRemainingCards.getSize(); j++) {
+                FrenchCard c1 = allRemainingCards.get(i);
+                FrenchCard c2 = allRemainingCards.get(j);
+                String key = getCardPairKey(c1, c2);
+                if (!usedPairs.contains(key)) {
+                    otherHands.add(Arrays.asList(c1, c2));
+                }
+            }
+        }
+        buckets.put("Other", otherHands);
     }
 
-    public List<List<FrenchCard>> getHandsInBucket(String bucketName) {
-        return buckets.getOrDefault(bucketName, Collections.emptyList());
-    }
-
-    public Set<String> getBucketNames() {
-        return buckets.keySet();
-    }
-
-    public int getTotalBuckets() {
-        return buckets.size();
+    private String getCardPairKey(FrenchCard c1, FrenchCard c2) {
+        return c1.hashCode() < c2.hashCode()
+                ? c1 + "-" + c2
+                : c2 + "-" + c1;
     }
 
     public List<FrenchCard> getBucketHandsByIndex(int bucketIndex) {
@@ -81,31 +96,46 @@ public class PokerHandBuckets {
     }
 
 
-    /*Static utility methods*/
+    private static FrenchCard findTopCard(Deck<FrenchCard> board) {
+        if ((board == null )|| (board.getSize()==0)) {
+            logger.log(Level.WARNING, "null top card");
+        }
+        logger.log(Level.FINEST, "top card " + board.stream().max(Comparator.comparingInt(PokerHandBuckets::getCardValue)));
+        return board.stream()
+                .max(Comparator.comparingInt(PokerHandBuckets::getCardValue))
+                .orElse(null);
+    }
+
+    private static FrenchCard findLowestCard(Deck<FrenchCard> board) {
+        if ((board == null || board.getSize()==0)) {
+            logger.log(Level.WARNING, "null lowest card");
+            return null;
+        }
+        logger.log(Level.FINEST, "lowest card " + board.stream().min(Comparator.comparingInt(PokerHandBuckets::getCardValue)));
+        return board.stream().min(Comparator.comparingInt(PokerHandBuckets::getCardValue)).orElse(null);
+    }
+
+
     private static int getCardValue(FrenchCard card) {
-        if (card == null || card.getType() == null) {
-            System.out.println("Warning: Card or Card type is null. Returning default value of -1.");
-            return -1;  // Default value for invalid cards
+        if (card == null) {
+            return -1; // Return invalid value if card is null
         }
-        return card.type.getNumber();
-    }
-
-    private static FrenchCard findTopCard(List<FrenchCard> board) {
-        if (!(board == null || board.isEmpty())) {
-            return board.stream().max(Comparator.comparingInt(PokerHandBuckets::getCardValue)).orElse(null);
-        }
-        return new FrenchCard(FrenchCard.FrenchCardType.Ace, FrenchCard.Suite.Clubs );
-    }
-
-    private static FrenchCard findLowestCard(List<FrenchCard> board) {
-        if (!(board == null || board.isEmpty())) {
-            return board.stream().min(Comparator.comparingInt(PokerHandBuckets::getCardValue)).orElse(null);
-        }
-        return null;
+        return card.number; // Return card number as value
     }
 
 
-    private static List<List<FrenchCard>> generateTPSK(List<FrenchCard> allRemainingCards, List<FrenchCard> communityCards) {
+    private static Map<FrenchCard.FrenchCardType, Integer> countCardRanks(Deck<FrenchCard> board) {
+        Map<FrenchCard.FrenchCardType, Integer> rankCounts = new HashMap<>();
+        for (FrenchCard card : board) {
+            rankCounts.put(card.type, rankCounts.getOrDefault(card.type, 0) + 1);
+        }
+        return rankCounts;
+    }
+
+    /***
+     * Buckets logic:
+     * */
+    private static List<List<FrenchCard>> generateTPSK(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
         List<List<FrenchCard>> hands = new ArrayList<>();
 
         FrenchCard topCard = findTopCard(communityCards);
@@ -152,109 +182,186 @@ public class PokerHandBuckets {
                 }
             }
         }
-        logger.log(Level.WARNING, "TPSK samples " + hands);
+        logger.log(Level.FINE, "TPSK samples " + hands);
 
         return hands;
     }
 
-    private static List<List<FrenchCard>> generatePPAB(List<FrenchCard> allRemainingCards, List<FrenchCard> communityCards) {
+    private static List<List<FrenchCard>> generatePPAB(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
         List<List<FrenchCard>> hands = new ArrayList<>();
         FrenchCard topCard = findTopCard(communityCards);
         if (topCard == null) {
-            // Handle the case where top card can't be determined, maybe skip this part or return an empty list
             return hands;
         }
         int topCardValue = getCardValue(topCard);
-
+        // Group available cards by rank
+        Map<FrenchCard.FrenchCardType, List<FrenchCard>> cardsByRank = new HashMap<>();
         for (FrenchCard card : allRemainingCards) {
-            int value = getCardValue(card);
-            if (value > topCardValue) {
-                for (FrenchCard.Suite s1 : FrenchCard.Suite.values()) {
-                    for (FrenchCard.Suite s2 : FrenchCard.Suite.values()) {
-                        if (s1.ordinal() < s2.ordinal()) {
-                            hands.add(Arrays.asList(
-                                    new FrenchCard(card.type, s1),
-                                    new FrenchCard(card.type, s2)
-                            ));
-                        }
-                    }
+            int cardValue = getCardValue(card);
+            if (cardValue > topCardValue) {
+                cardsByRank.computeIfAbsent(card.type, k -> new ArrayList<>()).add(card);
+            }
+        }
+        // Generate all unique pairs of same-rank cards
+        for (Map.Entry<FrenchCard.FrenchCardType, List<FrenchCard>> entry : cardsByRank.entrySet()) {
+            List<FrenchCard> cardsOfSameRank = entry.getValue();
+            for (int i = 0; i < cardsOfSameRank.size(); i++) {
+                for (int j = i + 1; j < cardsOfSameRank.size(); j++) {
+                    hands.add(Arrays.asList(cardsOfSameRank.get(i), cardsOfSameRank.get(j)));
                 }
             }
         }
-        logger.log(Level.WARNING, "PPAB generated " + hands);
+        logger.log(Level.FINE, "PPAB generated " + hands);
         return hands;
     }
 
-    private static List<List<FrenchCard>> generatePPBB(List<FrenchCard> allRemainingCards, List<FrenchCard> communityCards) {
-        List<List<FrenchCard>> PPBBhands = new ArrayList<>();
-        FrenchCard lowCard = findLowestCard(communityCards);
-        if (lowCard == null) {
-            // Handle the case where top card can't be determined, maybe skip this part or return an empty list
-            return PPBBhands;
+    private static List<List<FrenchCard>> generatePPBB(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
+        List<List<FrenchCard>> hands = new ArrayList<>();
+        FrenchCard lowestCard = findLowestCard(communityCards);
+        if (lowestCard == null) {
+            return hands;
         }
-        int lowCardValue = getCardValue(lowCard);
 
+        int lowestCardValue = getCardValue(lowestCard);
+
+        // Group by card rank (value), NOT by card type (suit)
+        Map<Integer, List<FrenchCard>> cardsByValue = new HashMap<>();
         for (FrenchCard card : allRemainingCards) {
-            int value = getCardValue(card);
-            if (value < lowCardValue) {
+            int cardValue = getCardValue(card);
+            if (cardValue < lowestCardValue) {
+                cardsByValue.computeIfAbsent(cardValue, k -> new ArrayList<>()).add(card);
+            }
+        }
+
+        // Only generate pairs of same-rank cards
+        for (Map.Entry<Integer, List<FrenchCard>> entry : cardsByValue.entrySet()) {
+            List<FrenchCard> sameRankCards = entry.getValue();
+            for (int i = 0; i < sameRankCards.size(); i++) {
+                for (int j = i + 1; j < sameRankCards.size(); j++) {
+                    hands.add(Arrays.asList(sameRankCards.get(i), sameRankCards.get(j)));
+                }
+            }
+        }
+
+        logger.fine("PPBB generated " + hands);
+        return hands;
+    }
+
+
+    //if there is a pair on the board already
+    private static List<List<FrenchCard>> generateTRifPair(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
+        List<List<FrenchCard>> tripsHands = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        Map<FrenchCard.FrenchCardType, Integer> cardRanks = countCardRanks(communityCards);
+
+        for (Map.Entry<FrenchCard.FrenchCardType, Integer> entry : cardRanks.entrySet()) {
+            FrenchCard.FrenchCardType rank = entry.getKey();
+            int countOnBoard = entry.getValue();
+
+            // Gather suits already used on the board for this rank
+            Set<FrenchCard.Suite> usedSuits = communityCards.stream()
+                    .filter(card -> card.type == rank)
+                    .map(card -> card.suite)
+                    .collect(Collectors.toSet());
+
+            // If 2 cards of same rank on board → need 1 more to complete trips
+            if (countOnBoard == 2) {
                 for (FrenchCard.Suite s1 : FrenchCard.Suite.values()) {
-                    for (FrenchCard.Suite s2 : FrenchCard.Suite.values()) {
-                        if (s1.ordinal() < s2.ordinal()) {
-                            PPBBhands.add(Arrays.asList(
-                                    new FrenchCard(card.type, s1),
-                                    new FrenchCard(card.type, s2)
-                            ));
+                    if (usedSuits.contains(s1)) continue;
+
+                    FrenchCard thirdTripCard = new FrenchCard(rank, s1);
+
+                    for (FrenchCard kicker : allRemainingCards) {
+                        if (communityCards.contains(kicker) || kicker.equals(thirdTripCard)) continue;
+                        if (!allRemainingCards.contains(thirdTripCard) || !allRemainingCards.contains(kicker)) continue;
+
+                        String key = Stream.of(thirdTripCard, kicker)
+                                .sorted(Comparator.comparing(FrenchCard::toString))
+                                .map(FrenchCard::toString)
+                                .collect(Collectors.joining(","));
+
+                        if (seen.add(key)) {
+                            tripsHands.add(Arrays.asList(thirdTripCard, kicker));
                         }
                     }
                 }
             }
         }
-        logger.log(Level.WARNING, "PPBB generated " + PPBBhands);
-        return PPBBhands;
+        logger.fine("Trips (if a pair on the board) generated: " + tripsHands);
+        return tripsHands;
     }
 
-    private static List<List<FrenchCard>> generateTR(List<FrenchCard> allRemainingCards, List<FrenchCard> communityCards) {
-        List<List<FrenchCard>> tripsHands = new ArrayList<>();
-        Map<FrenchCard.FrenchCardType, Integer> cardRanks = countCardRanks(communityCards);
-
-        for (Map.Entry<FrenchCard.FrenchCardType, Integer> entry : cardRanks.entrySet()) {
-            if (entry.getValue() == 2 || entry.getValue() == 1) {
-                FrenchCard.FrenchCardType rank = entry.getKey();
-                List<FrenchCard.Suite> existingSuits = new ArrayList<>();
-                for (FrenchCard card : communityCards) {
-                    if (card.type == rank) {
-                        existingSuits.add(card.suite);
-                    }
-                }
-
-                for (FrenchCard.Suite suit1 : FrenchCard.Suite.values()) {
-                    if (!existingSuits.contains(suit1)) {
-                        for (FrenchCard card : allRemainingCards) {
-                            if (!existingSuits.contains(card.suite)) {
-                                List<FrenchCard> hand = Arrays.asList(
-                                        new FrenchCard(rank, suit1),
-                                        card
-                                );
-                                tripsHands.add(hand);
+    private static List<List<FrenchCard>> generatePotentialFlush(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
+        List<List<FrenchCard>> flushHands = new ArrayList<>();
+        Map<FrenchCard.Suite, List<FrenchCard>> communitySuits = communityCards.stream()
+                .collect(Collectors.groupingBy(c -> c.suite));
+        for (FrenchCard.Suite suit : FrenchCard.Suite.values()) {
+            List<FrenchCard> communitySuitCards = communitySuits.getOrDefault(suit, new ArrayList<>());
+            if (communitySuitCards.size() >= 3) {
+                List<FrenchCard> remainingCardsOfSuit = allRemainingCards.stream()
+                        .filter(c -> c.suite == suit)
+                        .collect(Collectors.toList());
+                List<FrenchCard> potentialFlush = new ArrayList<>(communitySuitCards);
+                potentialFlush.addAll(remainingCardsOfSuit);
+                if (potentialFlush.size() >= 5) {
+                    for (int i = 0; i < remainingCardsOfSuit.size(); i++) {
+                        for (int j = i + 1; j < remainingCardsOfSuit.size(); j++) {
+                            List<FrenchCard> flushHand = new ArrayList<>(communitySuitCards);
+                            flushHand.add(remainingCardsOfSuit.get(i));
+                            flushHand.add(remainingCardsOfSuit.get(j));
+                            if (flushHand.size() == 5) {
+                                flushHands.add(flushHand);
                             }
                         }
                     }
                 }
             }
         }
-        logger.log(Level.WARNING, "trips generated" + tripsHands);
-        return tripsHands;
+
+        logger.fine("Potential flush: " + flushHands);
+        return flushHands;
     }
 
-//    private static List<List<FrenchCard>> generateOp(List<FrenchCard> allRemainingCards, List<FrenchCard> communityCards){
-//
-//    }
+    private static List<List<FrenchCard>> generatePotentialStraights(Deck<FrenchCard> allRemainingCards, Deck<FrenchCard> communityCards) {
+        List<List<FrenchCard>> straightHands = new ArrayList<>();
 
-    private static Map<FrenchCard.FrenchCardType, Integer> countCardRanks(List<FrenchCard> board) {
-        Map<FrenchCard.FrenchCardType, Integer> rankCounts = new HashMap<>();
-        for (FrenchCard card : board) {
-            rankCounts.put(card.type, rankCounts.getOrDefault(card.type, 0) + 1);
+        List<List<Integer>> possibleStraights = Arrays.asList(
+                Arrays.asList(2, 3, 4, 5, 6),
+                Arrays.asList(3, 4, 5, 6, 7),
+                Arrays.asList(4, 5, 6, 7, 8),
+                Arrays.asList(5, 6, 7, 8, 9),
+                Arrays.asList(6, 7, 8, 9, 10),
+                Arrays.asList(7, 8, 9, 10, 11),
+                Arrays.asList(8, 9, 10, 11, 12),
+                Arrays.asList(9, 10, 11, 12, 13),
+                Arrays.asList(10, 11, 12, 13, 14),  // Ace-high
+                Arrays.asList(14, 2, 3, 4, 5)      // Ace-low
+        );
+        for (List<Integer> straightSequence : possibleStraights) {
+            List<FrenchCard> potentialStraight = new ArrayList<>();
+            Set<Integer> missingRanks = new HashSet<>(straightSequence);
+
+            for (FrenchCard card : communityCards) {
+                if (missingRanks.contains(card.number)) {
+                    potentialStraight.add(card);
+                    missingRanks.remove(card.number);
+                }
+            }
+
+            if (potentialStraight.size() < 5) {
+                List<FrenchCard> remainingCards = allRemainingCards.stream()
+                        .filter(card -> missingRanks.contains(card.number))
+                        .collect(Collectors.toList());
+
+                if (remainingCards.size() == 2) {
+                    straightHands.add(remainingCards);
+                }
+            }
         }
-        return rankCounts;
+
+        logger.fine("Potential straights: " + straightHands);
+        return straightHands;
     }
+
 }
