@@ -31,12 +31,17 @@ public class Stand extends AbstractAction implements IPrintable {
     }
 
     @Override
-    public String getString(AbstractGameState gameState){
+    public String getString(AbstractGameState gameState) {
         return "Stand";
     }
 
     @Override
     public String toString() {
         return "Stand";
+    }
+
+    public int getPlayerID(AbstractGameState gameState) {
+        BlackjackGameState bjgs = (BlackjackGameState)gameState;  // Get the game state
+        return bjgs.getCurrentPlayer();  // Return the current player's ID
     }
 }

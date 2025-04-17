@@ -92,14 +92,49 @@ public abstract class StandardForwardModel extends AbstractForwardModel {
     @Override
     public final void endPlayerTurn(AbstractGameState gs) {
         if (gs.getGameStatus() != GAME_ONGOING) return;
-        int turnOwner = gs.turnOwner;
+
+        // Check if only one player remains non-terminal (still in the game)
+        int activePlayers = 0;
+        int lastActivePlayer = -1;
+
+        for (int i = 0; i < gs.getNPlayers(); i++) {
+            if (gs.isNotTerminalForPlayer(i)) {
+                activePlayers++;
+                lastActivePlayer = i;  // Keep track of the last non-terminal player
+            }
+        }
+
+        // If only one active player is remaining, they win
+        if (activePlayers == 1) {
+            gs.setPlayerResult(CoreConstants.GameResult.WIN_GAME, lastActivePlayer);
+            gs.setGameStatus(GAME_END);
+            return;
+        }
+
+        boolean allPlayersTerminal = true;
+        for (int i = 0; i < gs.getNPlayers() - 1; i++) {
+            if (gs.isNotTerminalForPlayer(i)) {
+                allPlayersTerminal = false;  // If any player is not terminal
+                break;
+            }
+        }
+
+        if (allPlayersTerminal) {
+            gs.setGameStatus(GAME_END);  // If all players are terminal, the game ends
+            return;
+        }
+
+        int turnOwner = gs.getTurnOwner();
         do {
-            turnOwner = (turnOwner + 1) % gs.nPlayers;
-            if (turnOwner == gs.turnOwner) {
+            turnOwner = (turnOwner + 1) % gs.getNPlayers();
+            if (turnOwner == gs.getTurnOwner()) {
+                gs.setGameStatus(GAME_END);  // End game if all players are terminal and loop back
                 throw new AssertionError("Infinite loop - apparently all players are terminal, but game state is not. " +
                         "Last action played: " + gs.getHistory().get(gs.getHistory().size() - 1));
             }
-        } while (!gs.isNotTerminalForPlayer(turnOwner));
+        } while (!gs.isNotTerminalForPlayer(turnOwner));  // Continue until a non-terminal player is found
+
+        // Process the next player's turn
         endPlayerTurn(gs, turnOwner);
     }
 

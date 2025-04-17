@@ -50,6 +50,15 @@ public class FrenchCard extends Card {
         this.type = type;
         this.number = type.number;
     }
+    public static FrenchCardType getTypeFromNumber(int number) {
+        switch (number) {
+            case 11: return FrenchCardType.Jack;
+            case 12: return FrenchCardType.Queen;
+            case 13: return FrenchCardType.King;
+            case 14: return FrenchCardType.Ace;
+            default: return FrenchCardType.Number;
+        }
+    }
 
     private FrenchCard(FrenchCardType type, Suite suite, int number, int componentID){
         super(type.toString(), componentID);
@@ -106,4 +115,8 @@ public class FrenchCard extends Card {
         }
         return null;
     }
+    public int getValue() {
+        return number;
+    }
+
 }

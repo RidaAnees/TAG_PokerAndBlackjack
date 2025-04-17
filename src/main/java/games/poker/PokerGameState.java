@@ -36,8 +36,10 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     boolean[] playerActStreet;  // true if player acted this street, false otherwise
     boolean bet;  // True if a bet was made this street
     protected int bigId; // Stores the id of the previous big blind
+    boolean[] isAggressive; // True if the player has bet or raised this round
 
-    enum PokerGamePhase implements IGamePhase {
+
+    public enum PokerGamePhase implements IGamePhase {
         Preflop,
         Flop,
         Turn,
@@ -53,6 +55,7 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
 
     public PokerGameState(AbstractParameters gameParameters, int nPlayers) {
         super(gameParameters, nPlayers);
+        isAggressive = new boolean[nPlayers]; // Default value is false for all players
     }
 
     @Override
@@ -73,6 +76,7 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     }
 
     public void placeBet(int amount, int player) {
+        isAggressive[player] = true;
         // Check which pot this player is participating in, update the one that's not reached max
         int m = amount;
         MoneyPot noLimitPot = null;
@@ -139,6 +143,9 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
         }
     }
 
+    public Boolean isPlayerAggressive(int playerID){
+        return isAggressive[playerID];
+    }
     /**
      * This is a list of MoneyPots in player order
      **/
@@ -238,6 +245,7 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
             }
         }
         if (stillAlive <= 1) {
+            Arrays.fill(isAggressive, false); // Reset aggression for all players
             return true;
         }
         return false;
@@ -274,7 +282,7 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
     }
 
     @Override
-    protected AbstractGameState _copy(int playerId) {
+    protected PokerGameState _copy(int playerId) {
         PokerGameState copy = new PokerGameState(gameParameters.copy(), getNPlayers());
         copy.communityCards = communityCards.copy();
         copy.moneyPots = new ArrayList<>();
@@ -313,7 +321,28 @@ public class PokerGameState extends AbstractGameState implements IPrintable {
         copy.bet = bet;
         return copy;
     }
+    public double getPlayerScore(int playerId) {
+        return playerMoney[playerId].getValue();
+    }
+    public Deck<FrenchCard> getPlayerHand(int p) {
+        return playerDecks.get(p).copy();
+    }
+    public void hideAllOpponentCards(int playerId) {
+        for (int i = 0; i < getNPlayers(); i++) {
+            if (i != playerId) {
+                playerDecks.get(i).setVisibility((CoreConstants.VisibilityMode.HIDDEN_TO_ALL));
+            }
+        }
+    }
+    public List<FrenchCard> getPlayerCards(int currentPlayer) {
+        return new ArrayList<>(playerDecks.get(currentPlayer).getComponents());
+    }
 
+    public void setPlayerCards(List<FrenchCard> cards, int currPlayerId){
+        Deck<FrenchCard> playerDeck = playerDecks.get(currPlayerId);
+        playerDeck.clear();             // Remove current cards
+        playerDeck.add(cards);       // Add the sampled cards
+    }
     @Override
     protected double _getHeuristicScore(int playerId) {
         return new PokerHeuristic().evaluateState(this, playerId);
